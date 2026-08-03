@@ -1,0 +1,137 @@
+<!-- 🔥 SPICY CHATBOT UI 🔥 -->
+<div class="hehespicy-chat-wrapper">
+    <!-- Chat Toggle Button -->
+    <button id="chat-toggle-btn" class="hehechat-toggle-btn" aria-label="Open Chat">
+        <span class="hehefire-emoji">
+            <img src="img/titanlogo.png" alt="Titan Gym Logo">
+        </span>
+        <span class="hehebadge">1</span>
+    </button>
+
+    <!-- Chat Window -->
+    <div id="chat-window" class="hehechat-window hidden">
+        <!-- Header -->
+        <div class="hehechat-header">
+            <div class="hehechat-bot-profile">
+                <!-- Updated profile icon to use the logo image -->
+                <img src="img/titanlogo.png" alt="Titan Bot Avatar" class="heheprofile-icon">
+                <div>
+                    <h4>Titan Bot</h4>
+                    <span class="hehestatus-online">Online</span>
+                </div>
+            </div>
+            <button id="chat-close-btn" class="hehechat-close-btn">&times;</button>
+        </div>
+
+        <!-- Messages Area -->
+        <div id="chat-messages" class="hehechat-messages">
+            <div class="hehemessage hehebot-message">
+                <p>Welcome to Titan Fitness! Let's crush your goals. Ask me about memberships, trainers, or schedules! 💪</p>
+            </div>
+        </div>
+
+        <!-- Suggestions/Quick Replies -->
+        <div class="hehechat-suggestions">
+            <button class="hehesuggest-btn" data-query="membership">See Memberships 💰</button>
+            <button class="hehesuggest-btn" data-query="hours">Gym Hours ⏰</button>
+            <button class="hehesuggest-btn" data-query="trainer">Personal Trainers 🏋️‍♂️</button>
+        </div>
+
+        <!-- Input Area -->
+        <form id="chat-form" class="hehechat-input-area">
+            <input type="text" id="chat-input" placeholder="Type your spicy question..." autocomplete="off" required>
+            <button type="submit" id="chat-submit-btn" aria-label="Send Message">
+                <svg viewBox="0 0 24 24" class="hehesend-icon"><path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/></svg>
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+    const toggleBtn = document.getElementById("chat-toggle-btn");
+    const closeBtn = document.getElementById("chat-close-btn");
+    const chatWindow = document.getElementById("chat-window");
+    const chatForm = document.getElementById("chat-form");
+    const chatInput = document.getElementById("chat-input");
+    const chatMessages = document.getElementById("chat-messages");
+    const suggestBtns = document.querySelectorAll(".hehesuggest-btn");
+    const badge = toggleBtn.querySelector(".hehebadge");
+    const chatWrapper = document.querySelector(".hehespicy-chat-wrapper");
+    const navLinksEl = document.getElementById("nav-links");
+
+    // Keep the chat bubble out of the way while the mobile nav menu is open,
+    // so it never floats above or peeks out from behind the slide-in panel.
+    if (chatWrapper && navLinksEl) {
+        const syncNavState = () => chatWrapper.classList.toggle("nav-open", navLinksEl.classList.contains("active"));
+        new MutationObserver(syncNavState).observe(navLinksEl, { attributes: true, attributeFilter: ["class"] });
+        syncNavState();
+    }
+
+    // Local Mock Knowledge Base
+    const responses = {
+        membership: "We offer Monthly, Quarterly, and Annual memberships. Annual plans come with 2 months free! Drop your contact number to get current rates.",
+        hours: "Titan Fitness is open Monday to Saturday from 5:00 AM to 10:00 PM. Sundays we run from 7:00 AM to 12:00 PM.",
+        trainer: "Our certified personal trainers specialize in weight loss, bodybuilding, and injury rehab. Custom meal plans are included!",
+        default: "That's a hot question! I can't help you with that. Ask me about the above options!"
+    };
+
+    // Toggle Chat Visibility
+    toggleBtn.addEventListener("click", () => {
+        chatWindow.classList.toggle("hidden");
+        if (badge) badge.remove(); // Clear notification badge on first open
+    });
+
+    closeBtn.addEventListener("click", () => {
+        chatWindow.classList.add("hidden");
+    });
+
+    // Handle Form Submission
+    chatForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        appendMessage(text, "heheuser-message");
+        chatInput.value = "";
+
+        // Process Bot Answer
+        setTimeout(() => {
+            const lowerText = text.toLowerCase();
+            let reply = responses.default;
+
+            if (lowerText.includes("membership") || lowerText.includes("price") || lowerText.includes("cost")) {
+                reply = responses.membership;
+            } else if (lowerText.includes("hour") || lowerText.includes("time") || lowerText.includes("open")) {
+                reply = responses.hours;
+            } else if (lowerText.includes("trainer") || lowerText.includes("coach")) {
+                reply = responses.trainer;
+            }
+
+            appendMessage(reply, "hehebot-message");
+        }, 600);
+    });
+
+    // Handle Quick Reply Suggestions
+    suggestBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const queryType = btn.getAttribute("data-query");
+            appendMessage(btn.innerText, "heheuser-message");
+            
+            setTimeout(() => {
+                appendMessage(responses[queryType], "hehebot-message");
+            }, 500);
+        });
+    });
+
+    // Helper function to render messages
+    function appendMessage(text, senderClass) {
+        const msgDiv = document.createElement("div");
+        msgDiv.classList.add("hehemessage", senderClass);
+        msgDiv.innerHTML = `<p>${text}</p>`;
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll
+    }
+});
+
+</script>
